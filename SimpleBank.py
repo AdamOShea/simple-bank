@@ -1,6 +1,8 @@
 import uuid
 import os
 import time
+import tinydb
+
 class Customer:
     def __init__(self, uuid, name, dob, email, pin, accounts):
         self.uuid = uuid
@@ -32,6 +34,8 @@ class CurrentAccount(Account):
         super().__init__(customer, uuid, balance, creditLimit)
         self.creditLimit = creditLimit
 
+def fetchCustomer(email, pin):
+    pass
 
 def registerCustomer():
     os.system('cls')
@@ -53,6 +57,19 @@ def registerCustomer():
     time.sleep(3)
     
 def loginCustomer():
+    os.system('cls')
+    print("************ Login to SimpleBank ************")
+    email = input("Enter Your Email: ")
+    pin = input("Enter Your 4 Digit PIN: ")
+    if fetchCustomer(email, pin) == False:
+        print("Incorrect details, please try again")
+        time.sleep(2)
+    else:
+        cust = fetchCustomer(email, pin)
+        print("Welcome back {cust.name}, logging you in...")
+        mainMenu(cust)
+
+def mainMenu(cust):
     pass
     
 def menu():
