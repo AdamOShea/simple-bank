@@ -1,7 +1,7 @@
 import uuid
 import os
 import time
-import tinydb
+from tinydb import TinyDB, Query
 
 class Customer:
     def __init__(self, uuid, name, dob, email, pin, accounts):
@@ -35,7 +35,7 @@ class CurrentAccount(Account):
         self.creditLimit = creditLimit
 
 def fetchCustomer(email, pin):
-    pass
+    return False
 
 def registerCustomer():
     os.system('cls')
@@ -47,6 +47,8 @@ def registerCustomer():
     accounts = []
     
     newCustomer = Customer(str(uuid.uuid1()), name, dob, email, pin, accounts)
+    customerDb = TinyDB('customers.json')
+    customerDb.insert({'uuid':newCustomer.uuid,'name':newCustomer.name,'dob':newCustomer.dob,'email':newCustomer.email,'pin':newCustomer.pin,'accounts':newCustomer.accounts})
     
     print("Registering Customer....")
     time.sleep(2)
@@ -58,15 +60,16 @@ def registerCustomer():
     
 def loginCustomer():
     os.system('cls')
-    print("************ Login to SimpleBank ************")
+    print("************ Login to SimpleBank ************\n\n")
     email = input("Enter Your Email: ")
     pin = input("Enter Your 4 Digit PIN: ")
-    if fetchCustomer(email, pin) == False:
+    cust = fetchCustomer(email, pin)
+    if cust == False:
         print("Incorrect details, please try again")
-        time.sleep(2)
+        time.sleep(3)
     else:
-        cust = fetchCustomer(email, pin)
         print("Welcome back {cust.name}, logging you in...")
+        time.sleep(3)
         mainMenu(cust)
 
 def mainMenu(cust):
