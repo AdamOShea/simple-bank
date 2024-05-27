@@ -2,7 +2,10 @@ import uuid
 import os
 import time
 from tinydb import TinyDB, Query
+import re
+from dataclasses import dataclass
 
+@dataclass
 class Customer:
     def __init__(self, uuid, name, dob, email, pin, accounts):
         self.uuid = uuid
@@ -33,13 +36,23 @@ class CurrentAccount(Account):
     def __init__(self, customer, uuid, balance, creditLimit):
         super().__init__(customer, uuid, balance, creditLimit)
         self.creditLimit = creditLimit
+            
 
 def fetchCustomer(email, pin):
-    return False
+    cust = Query()
+    customerDb = TinyDB('customers.json')
+    
+    searchedCust = customerDb.get(cust.email.matches(email, flags=re.IGNORECASE)  & (cust.pin.matches(pin)))
+    
+    activeCustomer = Customer(**searchedCust)
+    
+    return activeCustomer
+    
 
 def registerCustomer():
     os.system('cls')
     print("************ Register with SimpleBank ************\n\nPlease Enter Your Details\n\n")
+    
     name = input("Enter Your Name: ")
     dob = input("Enter Your Date of Birth (DD/MM/YYYY): ")
     email = input("Enter Your Email: ")
@@ -54,7 +67,6 @@ def registerCustomer():
     time.sleep(2)
     os.system('cls')
     print("You are now registered!\n")
-    print("\n")
     print(newCustomer)
     time.sleep(3)
     
@@ -68,7 +80,7 @@ def loginCustomer():
         print("Incorrect details, please try again")
         time.sleep(3)
     else:
-        print("Welcome back {cust.name}, logging you in...")
+        print("Welcome back " + str(cust.name) + ", logging you in...")
         time.sleep(3)
         mainMenu(cust)
 
