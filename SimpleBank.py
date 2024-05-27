@@ -47,7 +47,6 @@ def fetchCustomer(email, pin):
     activeCustomer = Customer(**searchedCust)
     
     return activeCustomer
-    
 
 def registerCustomer():
     os.system('cls')
@@ -83,16 +82,40 @@ def loginCustomer():
         print("Welcome back " + str(cust.name) + ", logging you in...")
         time.sleep(3)
         mainMenu(cust)
+        
+def viewAccounts(cust):
+    pass
+
+def createAccount(cust):
+    pass
+
+def deleteAccount(cust):
+    pass
 
 def mainMenu(cust):
-    pass
-    
+    while True:
+        os.system('cls')
+        print("************ Main Menu ************\n\n")
+        print("Please select an option from the menu using the corresponding numbers:\n\n[1] View Accounts\n[2] Create a New Account\n[3] Delete an Account\n\nEnter [x] to log out.\n")
+        menuOption = input("Enter: ")
+        if menuOption == '1':
+            viewAccounts(cust)
+        elif menuOption == '2':
+            createAccount(cust)
+        elif menuOption == '3':
+            deleteAccount(cust)
+        elif menuOption == 'x' or 'X':
+            os.system('cls')
+            print("Logging Out...")
+            time.sleep(2)
+            break
+
 def menu():
     
     while True:
         os.system('cls')
         print("************ Welcome To SimpleBank ************\n\n")
-        print("Please select an option from the menu using the corresponding numbers:\n\n1. Login\n2. Register\n\nPress [x] to exit the program.\n")
+        print("Please select an option from the menu using the corresponding numbers:\n\n[1] Login\n[2] Register\n\nPress [x] to exit the program.\n")
         
         menuOption = input("Enter: ")
         if menuOption == "1":
