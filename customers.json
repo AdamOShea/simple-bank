@@ -1,1 +1,1 @@
-{"_default": {"1": {"uuid": "44e1e940-1c5b-11ef-a461-8c882b236822", "name": "test", "dob": "10/20/1001", "email": "test@gmail.com", "pin": "1234", "accounts": []}}}
+{"_default": {"1": {"uuid": "52de7581-21c8-11ef-adf5-74da3804ab38", "name": "test", "dob": "16/01/2002", "email": "test@gmail.com", "pin": "1234", "currentAccount": "80fffa2f-21cd-11ef-9458-74da3804ab38", "savingsAccount": null}}}

@@ -1,0 +1,1 @@
+{"_default": {"1": {"type": "Current", "uuid": "80fffa2f-21cd-11ef-9458-74da3804ab38", "customer": "52de7581-21c8-11ef-adf5-74da3804ab38", "balance": 0, "creditLimit": 500}, "2": {"type": "Savings", "uuid": "53810a3e-21ce-11ef-b03a-74da3804ab38", "customer": "52de7581-21c8-11ef-adf5-74da3804ab38", "balance": 0, "withdrawLimit": 1}}}
