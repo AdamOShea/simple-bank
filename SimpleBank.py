@@ -20,7 +20,8 @@ class Customer:
         return f"Customer: {self.name}\nCustomer ID: {self.uuid}\nDate of Birth: {self.dob}\nEmail: {self.email}"
 
 class Account:
-    def __init__(self, customer, uuid, balance):
+    def __init__(self, accountType, customer, uuid, balance):
+        self.accountType = accountType
         self.customer = customer
         self.uuid = uuid
         self.balance = balance
@@ -29,15 +30,20 @@ class Account:
         return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\nCurrent Balance: {self.balance}"
     
 class SavingsAccount(Account):
-    def __init__(self, customer, uuid, balance, withdrawLimit):
-        super().__init__(customer, uuid, balance)
+    def __init__(self, accountType, customer, uuid, balance, withdrawLimit):
+        super().__init__(accountType, customer, uuid, balance)
         self.withdrawLimit = withdrawLimit
-        
+    
+    def __str__(self):
+        return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\nCurrent Balance: {self.balance}\nWithdrawl Limit: {self.withdrawLimit}"
+    
 class CurrentAccount(Account):
-    def __init__(self, customer, uuid, balance, creditLimit):
-        super().__init__(customer, uuid, balance)
+    def __init__(self, accountType, customer, uuid, balance, creditLimit):
+        super().__init__(accountType, customer, uuid, balance)
         self.creditLimit = creditLimit
-            
+    def __str__(self):
+        super().__str__()
+        return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\nCurrent Balance: {self.balance}\nCredit Limit: {self.creditLimit}"      
 
 def fetchCustomer(email, pin):
     cust = Query()
@@ -53,7 +59,20 @@ def fetchCustomer(email, pin):
     else:
         return activeCustomer
     
+def fetchCurrentAccount(uuid):
+    account = Query()
+    accountsDb = TinyDB('accounts.json')
+    searchedAccount = accountsDb.get(account.uuid.matches(uuid))
+    activeAccount = CurrentAccount(**searchedAccount)
+    return activeAccount
 
+def fetchSavingsAccount(uuid):
+    account = Query()
+    accountsDb = TinyDB('accounts.json')
+    searchedAccount = accountsDb.get(account.uuid.matches(uuid))
+    activeAccount = SavingsAccount(**searchedAccount)
+    return activeAccount
+    
 def registerCustomer():
     os.system('cls')
     print("************ Register with SimpleBank ************\n\nPlease Enter Your Details\n\n")
@@ -89,8 +108,8 @@ def loginCustomer():
         time.sleep(2)
         loginCustomer()
     else:
-        print("Welcome back " + str(cust.name) + ", logging you in...")
-        time.sleep(3)
+        print("\nWelcome back " + str(cust.name) + ", logging you in...")
+        time.sleep(2)
         mainMenu(cust)
         
 def addAccountToCustomer(accountType, cust):
@@ -100,8 +119,8 @@ def addAccountToCustomer(accountType, cust):
     entry = Query()
     
     if accountType == 1:
-        newAccount = CurrentAccount(cust.uuid, str(uuid.uuid1()), 0, 500)
-        accountsDb.insert({'type':"Current",'uuid':newAccount.uuid,'customer':newAccount.customer,'balance':newAccount.balance,'creditLimit':newAccount.creditLimit})
+        newAccount = CurrentAccount("Current", cust.uuid, str(uuid.uuid1()), 0, 500)
+        accountsDb.insert({'accountType':"Current",'uuid':newAccount.uuid,'customer':newAccount.customer,'balance':newAccount.balance,'creditLimit':newAccount.creditLimit})
         customerDb.update({'currentAccount':newAccount.uuid}, entry.uuid == cust.uuid)
         cust.currentAccount = newAccount.uuid
         
@@ -111,8 +130,8 @@ def addAccountToCustomer(accountType, cust):
         time.sleep(3)
         
     elif accountType == 2:
-        newAccount = SavingsAccount(cust.uuid, str(uuid.uuid1()), 0, 1)
-        accountsDb.insert({'type':"Savings",'uuid':newAccount.uuid,'customer':newAccount.customer,'balance':newAccount.balance,'withdrawLimit':newAccount.withdrawLimit})
+        newAccount = SavingsAccount("Savings", cust.uuid, str(uuid.uuid1()), 0, 1)
+        accountsDb.insert({'accountType':"Savings",'uuid':newAccount.uuid,'customer':newAccount.customer,'balance':newAccount.balance,'withdrawLimit':newAccount.withdrawLimit})
         customerDb.update({'savingsAccount':newAccount.uuid}, entry.uuid == cust.uuid)
         cust.savingsAccount = newAccount.uuid
         
@@ -120,8 +139,7 @@ def addAccountToCustomer(accountType, cust):
         print("New Savings Account Created!\n")
         print(newAccount)
         time.sleep(3)
-        
-        
+               
 def checkCurrentAccountEligibility(cust):
     if not cust.currentAccount:
         return True
@@ -134,13 +152,55 @@ def checkSavingsAccountEligibility(cust):
     else:
         return False
     
-    
-        
-def viewAccounts(cust):
+def transactionMenu(account):
     pass
 
+def viewAccounts(cust):
+    while True:
+        os.system('cls')
+        print("************ View Accounts ************\n")
+        
+        if not cust.currentAccount and not cust.savingsAccount:
+            print("You don't have any accounts! Create one on the previous menu.")
+            time.sleep(3)
+            break
+        
+        if cust.currentAccount:
+            currentAccount = fetchCurrentAccount(cust.currentAccount)
+            
+            print("Your current account:\n")
+            print(currentAccount)
+            print("\n")
+            
+        if cust.savingsAccount:
+            savingsAccount = fetchSavingsAccount(cust.savingsAccount)
+            
+            print("Your savings account:\n")
+            print(savingsAccount)
+            
+        print("\n\nPlease select an account to make a transaction on or exit: ")
+        
+        if cust.currentAccount:
+            print("[1] Current Account")
+            
+        if cust.savingsAccount:
+            print("[2] Savings Account")
+            
+        print("[x] Exit\n")
+        
+        menuOption = input("Enter: ")
+        
+        if menuOption == 1:
+            transactionMenu(cust.currentAccount)
+        elif menuOption == 2:
+            transactionMenu(cust.savingsAccount)
+        elif menuOption == 'x' or 'X':
+            break
+        else:
+            print("Invalid input, please try again...")
+            time.sleep(2)
+
 def createAccount(cust):
-    
     while True:
         os.system('cls')
         print("************ Create a new Account ************\n")
@@ -166,11 +226,7 @@ def createAccount(cust):
                 time.sleep(2)
         elif menuOption == 'x' or 'X':
             break
-        else:
-            print("Invalid input! Please try again...")
-            time.sleep(2)
-    
-
+        
 def deleteAccount(cust):
     pass
 

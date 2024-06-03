@@ -1,1 +1,1 @@
-{"_default": {"1": {"uuid": "52de7581-21c8-11ef-adf5-74da3804ab38", "name": "test", "dob": "16/01/2002", "email": "test@gmail.com", "pin": "1234", "currentAccount": "80fffa2f-21cd-11ef-9458-74da3804ab38", "savingsAccount": null}}}
+{"_default": {"1": {"uuid": "52de7581-21c8-11ef-adf5-74da3804ab38", "name": "test", "dob": "16/01/2002", "email": "test@gmail.com", "pin": "1234", "currentAccount": "30bf3d2b-21e2-11ef-b465-74da3804ab38", "savingsAccount": "a5121782-21e4-11ef-a235-74da3804ab38"}}}
