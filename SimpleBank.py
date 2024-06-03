@@ -44,9 +44,13 @@ def fetchCustomer(email, pin):
     
     searchedCust = customerDb.get(cust.email.matches(email, flags=re.IGNORECASE)  & (cust.pin.matches(pin)))
     
-    activeCustomer = Customer(**searchedCust)
+    try:
+        activeCustomer = Customer(**searchedCust)
+    except:
+        return False
+    else:
+        return activeCustomer
     
-    return activeCustomer
 
 def registerCustomer():
     os.system('cls')
@@ -65,6 +69,7 @@ def registerCustomer():
     print("Registering Customer....")
     time.sleep(2)
     os.system('cls')
+    
     print("You are now registered!\n")
     print(newCustomer)
     time.sleep(3)
@@ -74,14 +79,19 @@ def loginCustomer():
     print("************ Login to SimpleBank ************\n\n")
     email = input("Enter Your Email: ")
     pin = input("Enter Your 4 Digit PIN: ")
+    
     cust = fetchCustomer(email, pin)
     if cust == False:
-        print("Incorrect details, please try again")
-        time.sleep(3)
+        print("Your details were entered incorrectly, please try again...")
+        time.sleep(2)
+        loginCustomer()
     else:
         print("Welcome back " + str(cust.name) + ", logging you in...")
         time.sleep(3)
         mainMenu(cust)
+        
+    
+    
         
 def viewAccounts(cust):
     pass
@@ -107,6 +117,7 @@ def mainMenu(cust):
         elif menuOption == 'x' or 'X':
             os.system('cls')
             print("Logging Out...")
+            cust = None
             time.sleep(2)
             break
 
