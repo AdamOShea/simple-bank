@@ -178,7 +178,7 @@ def viewAccounts(cust):
             print("Your savings account:\n")
             print(savingsAccount)
             
-        print("\n\nPlease select an account to make a transaction on or exit: ")
+        print("\n\nPlease select an account to make a transaction on, or exit: ")
         
         if cust.currentAccount:
             print("[1] Current Account")
@@ -228,7 +228,57 @@ def createAccount(cust):
             break
         
 def deleteAccount(cust):
-    pass
+    while True:
+        os.system('cls')
+        print("************ Delete an Account ************")
+        print("Please select the account you would like to delete, or exit\n")
+        
+        if cust.currentAccount:
+            print("[1] Current Account")
+            
+        if cust.savingsAccount:
+            print("[2] Savings Account\n")
+            
+        print("[x] Exit\n")
+        
+        customerDb = TinyDB('customer.json')
+        accountsDb = TinyDB('accounts.json')
+        account = Query()
+        menuOption = input("Enter: ")
+        
+        if cust.currentAccount and menuOption == 1:
+            while True:
+                print("Are you sure you want to delete your current account?")
+                print("Enter Y to confirm or X to cancel")
+                confirm = input("Enter: ")
+                if confirm == 'y' or 'Y':
+                    accountsDb.remove(account.uuid == cust.currentAccount)
+                    customerDb.update({'currentAccount':None}, account.currentAccount == cust.currentAccount)
+                    cust.currentAccount = None
+                    print("Account deleted!")
+                    time.sleep(2)
+                elif confirm == 'x' or 'X':
+                    print("Deletion cancelled...")
+                    time.sleep(2)
+                
+        elif cust.savingsAccount and menuOption == 2:
+            while True:
+                print("Are you sure you want to delete your savings account?")
+                print("Enter Y to confirm or X to cancel")
+                confirm = input("Enter: ")
+                if confirm == 'y' or 'Y':
+                    accountsDb.remove(account.uuid == cust.savingsAccount)
+                    customerDb.update({'savingsAccount':None}, account.savingsAccount == cust.savingsAccount)
+                    cust.savingsAccount = None
+                    print("Account deleted!")
+                    time.sleep(2)
+                elif confirm == 'x' or 'X':
+                    print("Deletion cancelled...")
+                    time.sleep(2)
+                
+        elif menuOption == 'x' or 'X':
+            break
+            
 
 def mainMenu(cust):
     while True:
