@@ -63,15 +63,23 @@ def fetchCurrentAccount(uuid):
     account = Query()
     accountsDb = TinyDB('accounts.json')
     searchedAccount = accountsDb.get(account.uuid.matches(uuid))
-    activeAccount = CurrentAccount(**searchedAccount)
-    return activeAccount
+    
+    if searchedAccount != None:
+        activeAccount = CurrentAccount(**searchedAccount)
+        return activeAccount
+    else:
+        return None
 
 def fetchSavingsAccount(uuid):
     account = Query()
     accountsDb = TinyDB('accounts.json')
     searchedAccount = accountsDb.get(account.uuid.matches(uuid))
-    activeAccount = SavingsAccount(**searchedAccount)
-    return activeAccount
+    
+    if searchedAccount != None:
+        activeAccount = SavingsAccount(**searchedAccount)
+        return activeAccount
+    else:
+        return None
     
 def registerCustomer():
     os.system('cls')
@@ -98,8 +106,10 @@ def registerCustomer():
 def loginCustomer():
     os.system('cls')
     print("************ Login to SimpleBank ************\n\n")
-    email = input("Enter Your Email: ")
-    pin = input("Enter Your 4 Digit PIN: ")
+    #email = input("Enter Your Email: ")
+    #pin = input("Enter Your 4 Digit PIN: ")
+    email = "test@gmail.com"
+    pin = "1234"
     
     cust = fetchCustomer(email, pin)
     
@@ -109,7 +119,7 @@ def loginCustomer():
         loginCustomer()
     else:
         print("\nWelcome back " + str(cust.name) + ", logging you in...")
-        time.sleep(2)
+        #time.sleep(2)
         mainMenu(cust)
         
 def addAccountToCustomer(accountType, cust):
@@ -239,45 +249,69 @@ def deleteAccount(cust):
         if cust.savingsAccount:
             print("[2] Savings Account\n")
             
-        print("[x] Exit\n")
+        print("\n[x] Exit")
         
-        customerDb = TinyDB('customer.json')
+        customerDb = TinyDB('customers.json')
         accountsDb = TinyDB('accounts.json')
         account = Query()
         menuOption = input("Enter: ")
         
-        if cust.currentAccount and menuOption == 1:
+        if cust.currentAccount and menuOption == '1':
             while True:
-                print("Are you sure you want to delete your current account?")
-                print("Enter Y to confirm or X to cancel")
+                print("\nAre you sure you want to delete your current account?")
+                print("Enter Y to confirm or N to cancel")
                 confirm = input("Enter: ")
-                if confirm == 'y' or 'Y':
+                if confirm.lower() == 'y':
                     accountsDb.remove(account.uuid == cust.currentAccount)
                     customerDb.update({'currentAccount':None}, account.currentAccount == cust.currentAccount)
                     cust.currentAccount = None
                     print("Account deleted!")
                     time.sleep(2)
-                elif confirm == 'x' or 'X':
+                    break
+                elif confirm.lower() == 'n':
                     print("Deletion cancelled...")
                     time.sleep(2)
+                    break
+                else:
+                    print("Invalid input, please try again")
+                    time.sleep(1)
                 
-        elif cust.savingsAccount and menuOption == 2:
+        elif not cust.currentAccount and menuOption == '1':
+            print("You do not have a current account!")
+            time.sleep(2)
+                
+        elif cust.savingsAccount and menuOption == '2':
             while True:
-                print("Are you sure you want to delete your savings account?")
-                print("Enter Y to confirm or X to cancel")
+                print("\nAre you sure you want to delete your savings account?")
+                print("Enter Y to confirm or N to cancel")
                 confirm = input("Enter: ")
-                if confirm == 'y' or 'Y':
+                print(confirm)
+                time.sleep(2)
+                if confirm.lower() == 'y':
                     accountsDb.remove(account.uuid == cust.savingsAccount)
                     customerDb.update({'savingsAccount':None}, account.savingsAccount == cust.savingsAccount)
                     cust.savingsAccount = None
                     print("Account deleted!")
                     time.sleep(2)
-                elif confirm == 'x' or 'X':
+                    break
+                elif confirm.lower() == 'n':
                     print("Deletion cancelled...")
                     time.sleep(2)
+                    break
+                else:
+                    print("Invalid input, please try again")
+                    time.sleep(1)
                 
-        elif menuOption == 'x' or 'X':
+        elif not cust.savingsAccount and menuOption == '2':
+            print("You do not have a savings account!")
+            time.sleep(2)
+                
+        elif menuOption.lower() == 'x':
             break
+        
+        else:
+            print("Invalid input, please try again")
+            time.sleep(1)
             
 
 def mainMenu(cust):

@@ -1,1 +1,1 @@
-{"_default": {"1": {"accountType": "Current", "uuid": "30bf3d2b-21e2-11ef-b465-74da3804ab38", "customer": "52de7581-21c8-11ef-adf5-74da3804ab38", "balance": 0, "creditLimit": 500}, "2": {"accountType": "Savings", "uuid": "a5121782-21e4-11ef-a235-74da3804ab38", "customer": "52de7581-21c8-11ef-adf5-74da3804ab38", "balance": 0, "withdrawLimit": 1}}}
+{"_default": {"1": {"accountType": "Current", "uuid": "69daaa98-3d5c-11ef-b3be-8c882b236822", "customer": "52de7581-21c8-11ef-adf5-74da3804ab38", "balance": 0, "creditLimit": 500}}}
