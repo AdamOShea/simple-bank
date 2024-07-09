@@ -29,6 +29,10 @@ class Account:
     def __str__(self) -> str:
         return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\nCurrent Balance: {self.balance}"
     
+    def deposit(self, amount):
+        self.balance = (self.balance + float(amount))
+        
+    
 class SavingsAccount(Account):
     def __init__(self, accountType, customer, uuid, balance, withdrawLimit):
         super().__init__(accountType, customer, uuid, balance)
@@ -162,7 +166,73 @@ def checkSavingsAccountEligibility(cust):
     else:
         return False
     
-def transactionMenu(account):
+def transactionMenu(account, accountType):
+    while True:
+        os.system('cls')
+        print("************ Transaction Menu ************")
+
+        print("\n\nPlease select the type of transaction you want to make, or exit: ")
+        print("\n[1] Deposit")
+        print("[2] Withdrawal")
+        print("[3] Transfer between your accounts")
+        print("[4] Transfer to another person's account")
+        print("\n[x] Exit")
+        
+        menuOption = input("Enter: ")
+        
+        if menuOption == '1':
+            depositMenu(account, accountType)
+        elif menuOption == '2':
+            withdrawMenu(account, accountType)
+        elif menuOption == '3':
+            transferBetweenAccounts(account)
+        elif menuOption == '4':
+            transferToOtherPerson(account)
+        elif menuOption.lower() == 'x':
+            break 
+        else:
+            print("Invalid input, please try again...")
+            time.sleep(2)
+
+def depositMenu(selectedAccount, accountType):
+    if accountType == 1:
+        account = fetchCurrentAccount(selectedAccount)
+    elif accountType == 2:
+        account = fetchSavingsAccount(selectedAccount)
+    while True:
+        os.system('cls')
+        print("Make a Deposit")
+        print("\nCurrent Balance: €" + str(account.balance))
+        print("\nPlease enter the amount you would like to deposit, or press [x] to exit")
+        
+        amount = input("Enter: ")
+        
+        if amount.lower() == 'x':
+            break
+        elif amount.replace(".", "").isnumeric():
+            
+            accountsDb = TinyDB('accounts.json')
+            acc = Query()
+            accountsDb.update({'balance':(account.balance + float(amount))}, acc.uuid == account.uuid)
+            account.deposit(amount)
+            
+            
+            print("You have deposited €" + amount + " into your account")
+            print("Your new balance is €" + str((account.balance)))
+            time.sleep(2)
+            break
+        else:
+            print("Invalid input, please try again")
+            time.sleep(1)
+        
+
+def withdrawMenu(account):
+    pass
+
+def transferBetweenAccounts(account):
+    pass
+
+def transferToOtherPerson(account):
     pass
 
 def viewAccounts(cust):
@@ -196,14 +266,20 @@ def viewAccounts(cust):
         if cust.savingsAccount:
             print("[2] Savings Account")
             
-        print("[x] Exit\n")
+        print("\n[x] Exit")
         
         menuOption = input("Enter: ")
         
-        if menuOption == 1:
-            transactionMenu(cust.currentAccount)
-        elif menuOption == 2:
-            transactionMenu(cust.savingsAccount)
+        if cust.currentAccount and menuOption == '1':
+            transactionMenu(cust.currentAccount, 1)
+        elif not cust.currentAccount and menuOption == '1':
+            print("You do not have a current account!")
+            time.sleep(2)
+        elif cust.savingsAccount and menuOption == '2':
+            transactionMenu(cust.savingsAccount, 2)
+        elif not cust.savingsAccount and menuOption == '2':
+            print("You do not have a current account!")
+            time.sleep(2)
         elif menuOption == 'x' or 'X':
             break
         else:
@@ -217,7 +293,7 @@ def createAccount(cust):
         print("A Current Account can be used at any time and has a €500 credit limit")
         print("A Savings Account can only make transfers or withdrawals once per month\n")
         print("(Please note that you can only hold 1 of each type of account)\n")
-        print("Please select the type of account you want to create\n[1] Current Account\n[2] Savings Account\n\n[x] Cancel")
+        print("Please select the type of account you want to create, or exit\n[1] Current Account\n[2] Savings Account\n\n[x] Exit")
         
         
         menuOption = input("Enter: ")
@@ -311,8 +387,7 @@ def deleteAccount(cust):
         
         else:
             print("Invalid input, please try again")
-            time.sleep(1)
-            
+            time.sleep(1)           
 
 def mainMenu(cust):
     while True:
