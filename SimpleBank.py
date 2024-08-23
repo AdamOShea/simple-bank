@@ -112,10 +112,10 @@ def registerCustomer():
 def loginCustomer():
     os.system('cls')
     print("************ Login to SimpleBank ************\n\n")
-    #email = input("Enter Your Email: ")
-    #pin = input("Enter Your 4 Digit PIN: ")
-    email = "test@gmail.com"
-    pin = "1234"
+    email = input("Enter Your Email: ")
+    pin = input("Enter Your 4 Digit PIN: ")
+    #email = "no.com"
+    #pin = "1234"
     
     cust = fetchCustomer(email, pin)
     
@@ -186,7 +186,8 @@ def transactionMenu(selectedAccount, accountType, cust):
         print("\n[1] Deposit")
         print("[2] Withdrawal")
         print("[3] Transfer between your accounts")
-        print("[4] Transfer to another person's account")
+        if accountType == 1:
+            print("[4] Transfer to another person's account")
         print("\n[x] Exit")
         
         menuOption = input("Enter: ")
@@ -201,8 +202,8 @@ def transactionMenu(selectedAccount, accountType, cust):
             #dont allow when only 1 account
             transferBetweenAccounts(selectedAccount, accountType, cust)
             break
-        elif menuOption == '4':
-            transferToOtherPerson(selectedAccount, cust)
+        elif menuOption == '4' and accountType != 2:
+            transferToOtherPerson(selectedAccount, accountType, cust)
             break
         elif menuOption.lower() == 'x':
             break 
@@ -363,7 +364,53 @@ def transferBetweenAccounts(selectedAccount, accountType, cust):
             time.sleep(1)
 
 def transferToOtherPerson(selectedAccount, accountType, cust):
-    pass
+    
+    account = fetchCurrentAccount(selectedAccount)
+    
+    while True:
+        os.system('cls')
+        print("Make a Transfer to Another Person's Account")
+        print("\nPlease note that you can only transfer money to other Current Accounts")
+        print("\nCurrent Balance: €" + str("%.2f" % account.balance))
+        print("\nPlease enter the UUID of the account you would like to transfer to, or press [x] to exit")
+        
+        uuid = input("Enter: ")
+        
+        accountsDb = TinyDB('accounts.json')
+        acc = Query()
+        
+        if uuid.lower() == 'x':
+            break
+        elif accountsDb.search(acc.uuid == uuid) and uuid != cust.currentAccount and uuid != cust.savingsAccount:
+            otherAccount = fetchCurrentAccount(uuid)
+            print("\nPlease enter the amount you would like to transfer, or press [x] to exit")
+        
+            amount = input("Enter: ")
+            
+            if amount.replace(".", "").isnumeric():
+                if float(amount) > float(account.balance + 500):
+                    print("You do not have the required funds to make this transfer. This amount also exceeds your credit limit. Please enter a different amount")
+                    time.sleep(2)
+                else:
+                    accountsDb = TinyDB('accounts.json')
+                    acc = Query()
+                    accountsDb.update({'balance':(account.balance - float(amount))}, acc.uuid == account.uuid)
+                    account.withdraw(amount)
+                    
+                    accountsDb.update({'balance':(otherAccount.balance + float(amount))}, acc.uuid == otherAccount.uuid)
+                    otherAccount.deposit(amount)
+                    
+                    print("You have transferred €" + amount + " from your Current Account to the account with UUID: " + uuid)
+                    print("Your new Current Account balance is €" + str("%.2f" % account.balance))
+                    time.sleep(3)
+                    transactionMenu(selectedAccount, accountType, cust)
+                    break
+            else:
+                print("Invalid input, please try again")
+                time.sleep(1)
+        else:
+            print("Invalid UUID entered, please try again")
+            time.sleep(1)
 
 def viewAccounts(cust):
     while True:
