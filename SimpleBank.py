@@ -41,7 +41,7 @@ class SavingsAccount(Account):
         self.withdrawLimit = withdrawLimit
     
     def __str__(self):
-        return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\nCurrent Balance: {self.balance}\nWithdrawl Limit: {self.withdrawLimit}"
+        return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\n\nCurrent Balance: {self.balance}\nWithdrawl Limit: {self.withdrawLimit}"
     
 class CurrentAccount(Account):
     def __init__(self, accountType, customer, uuid, balance, creditLimit):
@@ -49,7 +49,7 @@ class CurrentAccount(Account):
         self.creditLimit = creditLimit
     def __str__(self):
         super().__str__()
-        return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\nCurrent Balance: {self.balance}\nCredit Limit: {self.creditLimit}"      
+        return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\n\nCurrent Balance: {self.balance}\nCredit Limit: {self.creditLimit}"      
 
 def fetchCustomer(email, pin):
     cust = Query()
@@ -168,7 +168,7 @@ def checkSavingsAccountEligibility(cust):
     else:
         return False
     
-def transactionMenu(selectedAccount, accountType):
+def transactionMenu(selectedAccount, accountType, cust):
     if accountType == 1:
         account = fetchCurrentAccount(selectedAccount)
     elif accountType == 2:
@@ -181,7 +181,7 @@ def transactionMenu(selectedAccount, accountType):
             print("Current Account")
         else:
             print("Savings Account")
-        print("Current Balance: " + str(account.balance))
+        print("Current Balance: " + str("%.2f" % account.balance))
         print("\nPlease select the type of transaction you want to make, or exit: ")
         print("\n[1] Deposit")
         print("[2] Withdrawal")
@@ -192,16 +192,17 @@ def transactionMenu(selectedAccount, accountType):
         menuOption = input("Enter: ")
         
         if menuOption == '1':
-            depositMenu(selectedAccount, accountType)
+            depositMenu(selectedAccount, accountType, cust)
             break
         elif menuOption == '2':
             withdrawMenu(selectedAccount, accountType)
             break
         elif menuOption == '3':
-            transferBetweenAccounts(selectedAccount)
+            #dont allow when only 1 account
+            transferBetweenAccounts(selectedAccount, accountType, cust)
             break
         elif menuOption == '4':
-            transferToOtherPerson(selectedAccount)
+            transferToOtherPerson(selectedAccount, cust)
             break
         elif menuOption.lower() == 'x':
             break 
@@ -209,7 +210,7 @@ def transactionMenu(selectedAccount, accountType):
             print("Invalid input, please try again...")
             time.sleep(2)
 
-def depositMenu(selectedAccount, accountType):
+def depositMenu(selectedAccount, accountType, cust):
     if accountType == 1:
         account = fetchCurrentAccount(selectedAccount)
     elif accountType == 2:
@@ -217,7 +218,7 @@ def depositMenu(selectedAccount, accountType):
     while True:
         os.system('cls')
         print("Make a Deposit")
-        print("\nCurrent Balance: €" + str(account.balance))
+        print("\nCurrent Balance: €" + str("%.2f" % account.balance))
         print("\nPlease enter the amount you would like to deposit, or press [x] to exit")
         
         amount = input("Enter: ")
@@ -232,15 +233,15 @@ def depositMenu(selectedAccount, accountType):
             account.deposit(amount)
             
             print("You have deposited €" + amount + " into your account")
-            print("Your new balance is €" + str((account.balance)))
+            print("Your new balance is €" + str(("%.2f" % account.balance)))
             time.sleep(2)
-            transactionMenu(selectedAccount, accountType)
+            transactionMenu(selectedAccount, accountType, cust)
             break
         else:
             print("Invalid input, please try again")
             time.sleep(1)
 
-def withdrawMenu(selectedAccount, accountType):
+def withdrawMenu(selectedAccount, accountType, cust):
     if accountType == 1:
         account = fetchCurrentAccount(selectedAccount)
     elif accountType == 2:
@@ -248,7 +249,7 @@ def withdrawMenu(selectedAccount, accountType):
     while True:
         os.system('cls')
         print("Make a Withdrawal")
-        print("\nCurrent Balance: €" + str(account.balance))
+        print("\nCurrent Balance: €" + str("%.2f" % account.balance))
         print("\nPlease enter the amount you would like to withdraw, or press [x] to exit")
         
         amount = input("Enter: ")
@@ -267,9 +268,9 @@ def withdrawMenu(selectedAccount, accountType):
                     account.withdraw(amount)
                     
                     print("You have withdrawn €" + amount + " from your account")
-                    print("Your new balance is €" + str((account.balance)))
+                    print("Your new balance is €" + str(("%.2f" % account.balance)))
                     time.sleep(2)
-                    transactionMenu(selectedAccount, accountType)
+                    transactionMenu(selectedAccount, accountType, cust)
                     break
             if accountType == 2:
                 if float(amount) > account.balance:
@@ -282,18 +283,86 @@ def withdrawMenu(selectedAccount, accountType):
                     account.withdraw(amount)
                     
                     print("You have withdrawn €" + amount + " from your account")
-                    print("Your new balance is €" + str((account.balance)))
+                    print("Your new balance is €" + str(("%.2f" % account.balance)))
                     time.sleep(2)
-                    transactionMenu(selectedAccount, accountType)
+                    transactionMenu(selectedAccount, accountType, cust)
                     break
         else:
             print("Invalid input, please try again")
             time.sleep(1)
             
-def transferBetweenAccounts(account):
-    pass
+def transferBetweenAccounts(selectedAccount, accountType, cust):
+    # display selected account balance and other account balance like in viewAccounts
+    # ask for amount, make sure theres enough in account
+    # use deposit and withdraw methods on accounts + update in DB
+    # future: record transaction
+    if accountType == 1:
+        account = fetchCurrentAccount(selectedAccount)
+        otherAccount = fetchSavingsAccount(cust.savingsAccount)
+    elif accountType == 2:
+        account = fetchSavingsAccount(selectedAccount)
+        otherAccount = fetchCurrentAccount(cust.currentAccount)
+        
+    while True:
+        os.system('cls')
+        print("Transfer Between Your Accounts")
+        if accountType == 1:
+            print("\nCurrent Account Balance: €" + str("%.2f" % account.balance))
+            print("\nSavings Account Balance: €" + str("%.2f" % otherAccount.balance))
+        elif accountType == 2:
+            print("\nSavings Account Balance: €" + str("%.2f" % account.balance))
+            print("\nCurrent Account Balance: €" + str("%.2f" % otherAccount.balance))
+        
+        print("\nPlease enter the amount you would like to transfer, or press [x] to exit")
+        
+        amount = input("Enter: ")
+        
+        if amount.lower() == 'x':
+            break
+        elif amount.replace(".", "").isnumeric():
+            if accountType == 1:
+                if float(amount) > float(account.balance + 500):
+                    print("You do not have the required funds to make this transfer. This amount also exceeds your credit limit. Please enter a different amount")
+                    time.sleep(2)
+                else:
+                    accountsDb = TinyDB('accounts.json')
+                    acc = Query()
+                    accountsDb.update({'balance':(account.balance - float(amount))}, acc.uuid == account.uuid)
+                    account.withdraw(amount)
+                    
+                    accountsDb.update({'balance':(otherAccount.balance + float(amount))}, acc.uuid == otherAccount.uuid)
+                    otherAccount.deposit(amount)
+                    
+                    print("You have transferred €" + amount + " from your Current Account to your Savings Account")
+                    print("Your new Current Account balance is €" + str("%.2f" % account.balance))
+                    print("Your new Savings Account balance is €" + str("%.2f" % otherAccount.balance))
+                    time.sleep(3)
+                    transactionMenu(selectedAccount, accountType, cust)
+                    break
+            if accountType == 2:
+                if float(amount) > account.balance:
+                    print("You do not have the required funds to make this transfer, please enter a different amount")
+                    time.sleep(2)
+                else:
+                    accountsDb = TinyDB('accounts.json')
+                    acc = Query()
+                    accountsDb.update({'balance':(account.balance - float(amount))}, acc.uuid == account.uuid)
+                    account.withdraw(amount)
+                    
+                    accountsDb.update({'balance':(otherAccount.balance + float(amount))}, acc.uuid == otherAccount.uuid)
+                    otherAccount.deposit(amount)
+                    
+                    print("You have transferred €" + amount + " from your Savings Account to your Current Account")
+                    print("Your new Savings Account balance is €" + str("%.2f" % account.balance))
+                    print("Your new Current Account balance is €" + str("%.2f" % otherAccount.balance))
+                    time.sleep(3)
+                    transactionMenu(selectedAccount, accountType, cust)
+                    break
+        else:
+            print("Invalid input, please try again")
+            time.sleep(1)
 
-def transferToOtherPerson(account):
+def transferToOtherPerson(selectedAccount, accountType, cust):
     pass
 
 def viewAccounts(cust):
@@ -332,13 +401,13 @@ def viewAccounts(cust):
         menuOption = input("Enter: ")
         
         if cust.currentAccount and menuOption == '1':
-            transactionMenu(cust.currentAccount, 1)
+            transactionMenu(cust.currentAccount, 1, cust)
             break
         elif not cust.currentAccount and menuOption == '1':
             print("You do not have a current account!")
             time.sleep(2)
         elif cust.savingsAccount and menuOption == '2':
-            transactionMenu(cust.savingsAccount, 2)
+            transactionMenu(cust.savingsAccount, 2, cust)
             break
         elif not cust.savingsAccount and menuOption == '2':
             print("You do not have a current account!")
