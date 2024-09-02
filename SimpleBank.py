@@ -5,8 +5,15 @@ from tinydb import TinyDB, Query
 import re
 from dataclasses import dataclass
 
+
 @dataclass
 class Customer:
+    '''
+    Holds information about logged in user
+    Main use is to hold uuid's for accounts so they can be accessed in database
+    '''
+        
+
     def __init__(self, uuid, name, dob, email, pin, currentAccount, savingsAccount):
         self.uuid = uuid
         self.name = name
@@ -18,8 +25,13 @@ class Customer:
         
     def __str__(self) -> str:
         return f"Customer: {self.name}\nCustomer ID: {self.uuid}\nDate of Birth: {self.dob}\nEmail: {self.email}"
-
+        
 class Account:
+    '''
+    Base account class
+    Connects customer with account and holds basic account info
+    Deposit and withdraw methods add and subtract to balance but does not make changes to database
+    '''
     def __init__(self, accountType, customer, uuid, balance):
         self.accountType = accountType
         self.customer = customer
@@ -33,17 +45,25 @@ class Account:
         self.balance = (self.balance + float(amount))
         
     def withdraw(self, amount):
-        self.balance = (self.balance - float(amount))        
-    
+        self.balance = (self.balance - float(amount))
+        
 class SavingsAccount(Account):
+    '''
+    Account with withdraw limit included
+    Withdraw limit states how many withdrawals per month this account can make
+    '''
     def __init__(self, accountType, customer, uuid, balance, withdrawLimit):
         super().__init__(accountType, customer, uuid, balance)
         self.withdrawLimit = withdrawLimit
     
     def __str__(self):
-        return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\n\nCurrent Balance: {self.balance}\nWithdrawl Limit: {self.withdrawLimit}"
+        return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\n\nCurrent Balance: {self.balance}\nWithdrawl Limit: {self.withdrawLimit}"    
     
 class CurrentAccount(Account):
+    '''
+    Account that includes credit limit
+    Credit limit states how far below 0 an account's balance can go
+    '''
     def __init__(self, accountType, customer, uuid, balance, creditLimit):
         super().__init__(accountType, customer, uuid, balance)
         self.creditLimit = creditLimit
@@ -52,6 +72,10 @@ class CurrentAccount(Account):
         return f"Account Holder: {self.customer}\nAccount ID: {self.uuid}\n\nCurrent Balance: {self.balance}\nCredit Limit: {self.creditLimit}"      
 
 def fetchCustomer(email, pin):
+    '''
+    Function for retrieving a customer from the customer database
+    Returns a customer object
+    '''
     cust = Query()
     customerDb = TinyDB('customers.json')
     
@@ -66,6 +90,10 @@ def fetchCustomer(email, pin):
         return activeCustomer
     
 def fetchCurrentAccount(uuid):
+    '''
+    Function for retrieving a current account from the accounts database
+    Returns a current account object
+    '''
     account = Query()
     accountsDb = TinyDB('accounts.json')
     searchedAccount = accountsDb.get(account.uuid.matches(uuid))
@@ -77,6 +105,10 @@ def fetchCurrentAccount(uuid):
         return None
 
 def fetchSavingsAccount(uuid):
+    '''
+    Function for retrieving a current account from the accounts database
+    Returns a savings account object
+    '''
     account = Query()
     accountsDb = TinyDB('accounts.json')
     searchedAccount = accountsDb.get(account.uuid.matches(uuid))
@@ -88,6 +120,12 @@ def fetchSavingsAccount(uuid):
         return None
     
 def registerCustomer():
+    '''
+    Method for registering a customer
+    Takes input from user for customer details
+    Inserts new customer into customer database
+    Prints info back to the user
+    '''
     os.system('cls')
     print("************ Register with SimpleBank ************\n\nPlease Enter Your Details\n\n")
     
@@ -110,6 +148,13 @@ def registerCustomer():
     time.sleep(3)
     
 def loginCustomer():
+    '''
+    Method for logging in user
+    Takes input for login details
+    Searches database with input using fetchCustomer
+    If customer not found, asks for input again
+    If customer found, proceed to main menu with customer object passed as parameter
+    '''
     os.system('cls')
     print("************ Login to SimpleBank ************\n\n")
     email = input("Enter Your Email: ")
@@ -129,7 +174,12 @@ def loginCustomer():
         mainMenu(cust)
         
 def addAccountToCustomer(accountType, cust):
-    
+    '''
+    Method for creating and inserting an account to the accounts database 
+    Also updates customer database to assign new account to the customer
+    Checks which type of account customer wants to create
+    Creates the account and prints details back to user
+    '''
     accountsDb = TinyDB('accounts.json')
     customerDb = TinyDB('customers.json')
     entry = Query()
@@ -157,18 +207,30 @@ def addAccountToCustomer(accountType, cust):
         time.sleep(3)
                
 def checkCurrentAccountEligibility(cust):
+    '''
+    Method for checking if user already has current account
+    '''
     if not cust.currentAccount:
         return True
     else:
         return False
     
 def checkSavingsAccountEligibility(cust):
+    '''
+    Method for checking if user already has savings account
+    '''
     if not cust.savingsAccount:
         return True
     else:
         return False
     
 def transactionMenu(selectedAccount, accountType, cust):
+    '''
+    Method for displaying menu for transactions that can be made on user's accounts
+    User can deposit, withdraw, transfer between their accounts and transfer to other user's accounts
+    User can only transfer between their accounts if they have more than 1 account
+    User can only transfer to other users if they selected their current account
+    '''
     if accountType == 1:
         account = fetchCurrentAccount(selectedAccount)
     elif accountType == 2:
@@ -185,7 +247,8 @@ def transactionMenu(selectedAccount, accountType, cust):
         print("\nPlease select the type of transaction you want to make, or exit: ")
         print("\n[1] Deposit")
         print("[2] Withdrawal")
-        print("[3] Transfer between your accounts")
+        if cust.currentAccount and cust.savingsAccount:
+            print("[3] Transfer between your accounts")
         if accountType == 1:
             print("[4] Transfer to another person's account")
         print("\n[x] Exit")
@@ -198,7 +261,7 @@ def transactionMenu(selectedAccount, accountType, cust):
         elif menuOption == '2':
             withdrawMenu(selectedAccount, accountType)
             break
-        elif menuOption == '3':
+        elif menuOption == '3' and cust.currentAccount and cust.savingsAccount:
             #dont allow when only 1 account
             transferBetweenAccounts(selectedAccount, accountType, cust)
             break
@@ -212,6 +275,10 @@ def transactionMenu(selectedAccount, accountType, cust):
             time.sleep(2)
 
 def depositMenu(selectedAccount, accountType, cust):
+    '''
+    Method for allowing user to deposit into their account
+    Asks for amount from user then updates database
+    '''
     if accountType == 1:
         account = fetchCurrentAccount(selectedAccount)
     elif accountType == 2:
@@ -243,6 +310,11 @@ def depositMenu(selectedAccount, accountType, cust):
             time.sleep(1)
 
 def withdrawMenu(selectedAccount, accountType, cust):
+    '''
+    Method for allowing user to withdraw from their account
+    Asks for amount for withdrawal from user, then checks if its a valid amount
+    If valid, updates database
+    '''
     if accountType == 1:
         account = fetchCurrentAccount(selectedAccount)
     elif accountType == 2:
@@ -293,6 +365,11 @@ def withdrawMenu(selectedAccount, accountType, cust):
             time.sleep(1)
             
 def transferBetweenAccounts(selectedAccount, accountType, cust):
+    '''
+    Method for allowing user to transfer between their accounts
+    Displays account balances and asks for amount to transfer from user
+    If valid amount, updates both accounts in the database with new balances
+    '''
     # display selected account balance and other account balance like in viewAccounts
     # ask for amount, make sure theres enough in account
     # use deposit and withdraw methods on accounts + update in DB
@@ -365,6 +442,13 @@ def transferBetweenAccounts(selectedAccount, accountType, cust):
 
 def transferToOtherPerson(selectedAccount, accountType, cust):
     
+    '''
+    Method for allowing user to transfer from their current account to another user's account
+    Asks user for UUID of account to transfer to (similar to IBAN)
+    Checks if the account exists in DB and is not one of the current users accounts
+    Asks for amount from user and if valid, updates both accounts in DB
+    '''
+    
     account = fetchCurrentAccount(selectedAccount)
     
     while True:
@@ -413,6 +497,10 @@ def transferToOtherPerson(selectedAccount, accountType, cust):
             time.sleep(1)
 
 def viewAccounts(cust):
+    '''
+    Method for displaying the current user's accounts
+    If user has x account, it will fetch x account from the DB and display its details
+    '''
     while True:
         os.system('cls')
         print("************ View Accounts ************\n")
@@ -467,6 +555,11 @@ def viewAccounts(cust):
 
 def createAccount(cust):
     while True:
+        '''
+        Method that allows user to create an account
+        Just asks user to select which type they want and creates entry in DB
+        '''
+        
         os.system('cls')
         print("************ Create a new Account ************\n")
         print("A Current Account can be used at any time and has a €500 credit limit")
@@ -492,6 +585,12 @@ def createAccount(cust):
             break
         
 def deleteAccount(cust):
+    
+    '''
+    Method that allows user to remove an account
+    Asks user which one they want to remove and updates the DBs
+    '''
+    
     while True:
         os.system('cls')
         print("************ Delete an Account ************")
@@ -568,6 +667,9 @@ def deleteAccount(cust):
             time.sleep(1)           
 
 def mainMenu(cust):
+    '''
+    Main menu method
+    '''
     while True:
         os.system('cls')
         print("************ Main Menu ************\n\n")
@@ -587,7 +689,9 @@ def mainMenu(cust):
             break
 
 def menu():
-    
+    '''
+    Login menu that is seen when program starts
+    '''
     while True:
         os.system('cls')
         print("************ Welcome To SimpleBank ************\n\n")
@@ -602,3 +706,4 @@ def menu():
             break
 
 menu()
+
