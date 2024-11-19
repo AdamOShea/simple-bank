@@ -1,5 +1,4 @@
-A bank system application which incorporates the 4 major OOP
-principles and features basic banking operations.
+A bank system application which incorporates the 4 major OOP principles and features basic banking operations.
 Features:
 • Allows users to register and log in
 • Creation of both savings and current accounts
